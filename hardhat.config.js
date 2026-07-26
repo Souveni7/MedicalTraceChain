@@ -22,7 +22,10 @@ module.exports = {
       url: "http://127.0.0.1:8545",
     },
     sepolia: {
-      url: process.env.SEPOLIA_RPC_URL || "https://rpc.sepolia.org",
+      // no-registration public endpoints; SEPOLIA_RPC_URL overrides if set
+      // (verified reachable alternative: https://sepolia.drpc.org)
+      url: process.env.SEPOLIA_RPC_URL ||
+        "https://ethereum-sepolia-rpc.publicnode.com",
       accounts,
     },
   },

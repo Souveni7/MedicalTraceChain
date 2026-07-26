@@ -1,0 +1,11 @@
+COMP6452 Project 2 Task 3 - deployed smart contract addresses
+
+Network:          sepolia (chainId 11155111)
+Deployed at:      2026-07-26T12:57:52.087Z
+
+BatchRegistry:    0x94DA9460706f182F01e82E66d7f3238151B5E796
+ColdChainMonitor: 0xB8Cc1066Fa57Ba0395F6cae8c05dD3C5927b45Ac
+
+Etherscan:
+  https://sepolia.etherscan.io/address/0x94DA9460706f182F01e82E66d7f3238151B5E796
+  https://sepolia.etherscan.io/address/0xB8Cc1066Fa57Ba0395F6cae8c05dD3C5927b45Ac

@@ -7,8 +7,10 @@
 const hre = require("hardhat");
 const { getRoleSigners, banner, short } = require("./helpers");
 
-const TOP_UP = hre.ethers.parseEther("0.02");
-const MIN_BALANCE = hre.ethers.parseEther("0.01");
+// Sepolia gas is ~1-2 gwei, so 0.008 ETH covers dozens of demo txs per role;
+// one 0.05 ETH faucet claim is enough for the whole account layout.
+const TOP_UP = hre.ethers.parseEther("0.008");
+const MIN_BALANCE = hre.ethers.parseEther("0.004");
 
 async function main() {
   const { admin, manufacturer, distributor, pharmacy, oracle } =
@@ -17,7 +19,7 @@ async function main() {
   banner(`Funding role accounts on ${hre.network.name}`);
   const adminBalance = await hre.ethers.provider.getBalance(admin.address);
   console.log(`   admin ${short(admin.address)} balance: ${hre.ethers.formatEther(adminBalance)} ETH`);
-  if (adminBalance < hre.ethers.parseEther("0.1")) {
+  if (adminBalance < hre.ethers.parseEther("0.045")) {
     console.warn("   ⚠ admin balance is low — get test ETH from a Sepolia faucet first");
   }
 

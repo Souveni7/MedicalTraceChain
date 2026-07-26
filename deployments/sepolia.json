@@ -1,0 +1,17 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "deployedAt": "2026-07-26T12:57:52.087Z",
+  "deployBlock": null,
+  "contracts": {
+    "BatchRegistry": "0x94DA9460706f182F01e82E66d7f3238151B5E796",
+    "ColdChainMonitor": "0xB8Cc1066Fa57Ba0395F6cae8c05dD3C5927b45Ac"
+  },
+  "accounts": {
+    "admin/regulator": "0x3a84B24F14220fbD8F2dC7423aE067349e7ab5B5",
+    "manufacturer": "0xbF1dC89B95AD06E3D15d15ed701C6F846a32986A",
+    "distributor": "0xCfdBBc3Ea7Faf045565B03523F01D2CfF73b42DE",
+    "pharmacy": "0xBB2f7aDC43fEccD73D3ac4D2C76DBe6876A57311",
+    "oracle": "0xC646559DeD0B47f2668e66d5C0FDa401A0541901"
+  }
+}
