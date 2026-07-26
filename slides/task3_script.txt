@@ -6,32 +6,33 @@ Each paragraph is ONE line — turn on word wrap in your editor. Copy-paste keep
 Q&A answers at the end — do not paste those into the slides.
 
 -----------------------------------------------------------
-SLIDE 1 — Title & team          [0:20]  (cum 0:20)   Qiyan
+SLIDE 1 — Title & team          [0:20]  (cum 0:20)   Yankai
 -----------------------------------------------------------
-Good afternoon. This is MedicalTraceChain, our system for tracking medicine batches. Who did what is on the screen: I wrote the registry contract and the deployment; Yankai wrote the monitor contract and the oracle; Purui and Fei wrote the tests; Zhenyu wrote the off-chain parts. The system is live on Sepolia now.
+Good afternoon. This is MedicalTraceChain, our system for tracking medicine batches. Who did what is on the screen: Qiyan wrote the registry contract and the deployment; I wrote the monitor contract and the oracle; Purui and Fei wrote the tests; Zhenyu wrote the off-chain parts. The system is live on Sepolia now.
 
 -----------------------------------------------------------
-SLIDE 2 — Architecture          [0:40]  (cum 1:00)   Qiyan
+SLIDE 2 — Architecture          [0:40]  (cum 1:00)   Yankai
 -----------------------------------------------------------
 Here is the design. On the left: four parties, each with a wallet and an on-chain role. In the middle: two contracts on Sepolia. BatchRegistry handles register, transfer, verify, and recall. ColdChainMonitor receives temperature data. If a reading is outside two to eight degrees, it quarantines the batch by itself, with a cross-contract call. Only this contract can do that — no person can. On the right: the off-chain parts. The oracle service reads the sensors and sends signed data. The store keeps metadata and patient data off-chain. The rule is simple: state goes on-chain; private data stays off-chain; only hashes connect them.
 
 -----------------------------------------------------------
-SLIDE 3 — Changes after feedback [0:40]  (cum 1:40)   Fei
+SLIDE 3 — Changes after feedback [0:40]  (cum 1:40)   Purui
 -----------------------------------------------------------
 Four changes since Task 2. First, the platform. Task 2 chose Fabric. We kept the same idea — only known, approved parties can write — but we now enforce it with roles inside the contract, on public Ethereum. So anyone can check our system on Etherscan, and we have real contract addresses. Second, we hardened the oracle: one authorised account, and the contract checks every reading. Third, non-repudiation is now real: every write is a signed transaction, so we always know who did what. Fourth, clear scope: the three MUSTs and the SHOULD are fully on-chain; the IoT part is simulated. In production we would move to a consortium chain — the contracts would not change.
 
 -----------------------------------------------------------
 SLIDE 4 — Requirements          [0:20]  (cum 2:00)   Purui
 -----------------------------------------------------------
-This table maps each requirement to a contract function — you will see all of them in the demo. The first four are fully on-chain. The cold-chain one uses simulated sensors. The NFRs at the bottom each map to a real mechanism, not a promise. Now the demo.
+This table maps each requirement to a contract function — you will see all of them in the demo. The first four are fully on-chain. The cold-chain one uses simulated sensors. The NFRs at the bottom each map to a real mechanism, not a promise. Fei will now cover the implementation.
 
 -----------------------------------------------------------
-SLIDE 5 — Implementation        [0:30]  (cum 2:30)   Yankai
+SLIDE 5 — Implementation        [0:30]  (cum 2:30)   Fei
 -----------------------------------------------------------
 Quick facts. Solidity, Hardhat, OpenZeppelin; the oracle is Node.js. Both contracts are on Sepolia — addresses are in addresses.txt. We used six patterns from this course: oracle, access control, state machine, emergency stop, hash anchoring, checks-effects-interactions. Thirty-one unit tests, all passing, covering both good and bad paths. The repo is clean and easy to reproduce.
 
 -----------------------------------------------------------
-SLIDE 6 — Demo plan             [0:15]  (cum 2:45)   Qiyan
+SLIDE 6 — Demo plan             [0:15]  (cum 2:45)   Fei
+(last line hands over: "Qiyan will now run the demo.")
 -----------------------------------------------------------
 The demo is one batch, full life cycle, five steps. Two steps fail on purpose — because the contract enforces the rules, not our app. We run locally for speed; the same flow is already on Sepolia.
 
@@ -62,25 +63,26 @@ STEP 5 · Verify & recall  [0:50]  (cum 7:00)
   > npx hardhat run scripts/03-verify.js --network localhost
 This is the pharmacy scan. Status: QUARANTINED — do not dispense. Also note: we re-hash the off-chain file, and it matches the on-chain hash, so nothing was tampered. Now the regulator recalls it:
   > npx hardhat run scripts/04-recall.js --network localhost
-Recalled on-chain — and the notifier finds every past holder from the events and notifies them. One transaction, instead of days. Last thing: the same flow on Sepolia — here is Etherscan. [Show browser.] Now the code.
+Recalled on-chain — and the notifier finds every past holder from the events and notifies them. One transaction, instead of days. Last thing: the same flow on Sepolia — here is Etherscan. [Show browser.] Zhenyu will now walk through the code.
 
 -----------------------------------------------------------
 CODE WALKTHROUGH                [3:00]  (cum 10:00)
 -----------------------------------------------------------
 
-STOP 1 · transferCustody  [0:45]  (cum 7:45)   Qiyan
+STOP 1 · transferCustody  [0:45]  (cum 7:45)   Zhenyu
 This function shows the state machine. Read it top to bottom: batch must be Active; sender must be the current holder; no self-transfer; receiver must have a role; expired batches cannot move. Then update, record history, emit the event. Every rule is a custom error, and every error has a test.
 
-STOP 2 · reportReading  [0:50]  (cum 8:35)   Yankai
+STOP 2 · reportReading  [0:50]  (cum 8:35)   Zhenyu
 The oracle's gate. First, input checks: temperature must be realistic; timestamps must increase — no replays; no readings from the future. Then the logic: get this batch's range — default two to eight, can be changed per batch — count the excursion, and at the limit, the cross-contract call you saw in the demo. Note the order: state changes first, external call last — checks, effects, interactions.
 
 STOP 3 · oracle/index.js  [0:45]  (cum 9:20)   Zhenyu
+(here this IS Zhenyu's own code — natural first person: "I wrote this service…")
 The off-chain side. It finds batches by reading events — no config. Each cycle: sample, log raw data off-chain, drop bad samples, average, submit as the one authorised oracle account. When a batch is no longer Active, it stops. The chain never stores raw data — one clean reading per cycle.
 
-STOP 4 · one test  [0:30]  (cum 9:50)   Purui/Fei
+STOP 4 · one test  [0:30]  (cum 9:50)   Zhenyu
 One example of our tests. We set a three-strike rule: two bad readings — still Active, we assert that; third one — quarantined, asserted again. We test the business rule, not just the function. Thirty-one tests, all green.
 
-WRAP  [0:10]  (cum 10:00)   Qiyan
+WRAP  [0:10]  (cum 10:00)   Zhenyu
 That is MedicalTraceChain: two contracts with real logic, a guarded oracle, a clean on/off-chain split — deployed and tested. Questions welcome.
 
 -----------------------------------------------------------
