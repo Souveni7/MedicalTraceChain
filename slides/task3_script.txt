@@ -2,46 +2,46 @@ MedicalTraceChain — Task 3 presentation script (short version, simple English)
 ==============================================================================
 Total: 10:00  (2:00 design + 0:45 bridge + 4:15 demo + 3:00 code walkthrough)
 Pace: ~70-80 words/min. Times in [brackets] = this slide; (cum X:XX) = running total.
-Each English paragraph is ONE line — turn on word wrap. Copy the English into the notes;
-the 【中文】 line under it is a translation for understanding only (do not read it aloud).
-Q&A answers at the end — do not paste those into the slides.
+Each English paragraph is ONE line, so turn on word wrap. Copy the English into the notes.
+The 【中文】 line under it is a translation for understanding only (do not read it aloud).
+Q&A answers at the end. Do not paste those into the slides.
 【说明】每段英文下面的【中文】行是理解用的翻译，别念出来；复制备注时只复制英文那一行。
 
 -----------------------------------------------------------
 SLIDE 1 — Title & team          [0:20]  (cum 0:20)   Yankai
 -----------------------------------------------------------
-Good afternoon. This is MedicalTraceChain, our system for tracking medicine batches. Who did what is on the screen: Qiyan wrote the registry contract and the deployment; I wrote the monitor contract and the oracle; Purui and Fei wrote the tests; Zhenyu wrote the off-chain parts. The system is live on Sepolia now.
+Good afternoon. This is MedicalTraceChain, our system for tracking medicine batches. Who did what is on the screen. Qiyan wrote the registry contract and the deployment. I wrote the monitor contract and the oracle. Purui and Fei wrote the tests. Zhenyu wrote the off-chain parts. The system is live on Sepolia now.
 【中文】下午好。这是 MedicalTraceChain，我们用来追踪药品批次的系统。分工在屏幕上：Qiyan 写了登记合约和部署；我写了监控合约和预言机；Purui 和 Fei 写了测试；Zhenyu 写了链下部分。系统现在已经运行在 Sepolia 上。
 
 -----------------------------------------------------------
 SLIDE 2 — Architecture          [0:40]  (cum 1:00)   Yankai
 -----------------------------------------------------------
-Here is the design. On the left: four parties, each with a wallet and an on-chain role. In the middle: two contracts on Sepolia. BatchRegistry handles register, transfer, verify, and recall. ColdChainMonitor receives temperature data. If a reading is outside two to eight degrees, it quarantines the batch by itself, with a cross-contract call. Only this contract can do that — no person can. On the right: the off-chain parts. The oracle service reads the sensors and sends signed data. The store keeps metadata and patient data off-chain. The rule is simple: state goes on-chain; private data stays off-chain; only hashes connect them.
+Here is the design. On the left: four parties, each with a wallet and an on-chain role. In the middle: two contracts on Sepolia. BatchRegistry handles register, transfer, verify, and recall. ColdChainMonitor receives temperature data. If a reading is outside two to eight degrees, it quarantines the batch by itself, with a cross-contract call. Only this contract can do that. No person can. On the right: the off-chain parts. The oracle service reads the sensors and sends signed data. The store keeps metadata and patient data off-chain. The rule is simple. State goes on-chain, private data stays off-chain, and only hashes connect them.
 【中文】这是我们的设计。左边：四个参与方，每个都有一个钱包和一个链上角色。中间：Sepolia 上的两个合约。BatchRegistry 负责登记、转移、核验、召回。ColdChainMonitor 接收温度数据；如果读数超出 2 到 8 度，它会通过一次跨合约调用自动隔离该批次——而且只有这个合约能做，任何人都不能。右边：链下部分。预言机服务读取传感器并发送签名后的数据；存储把元数据和患者数据都放在链下。规则很简单：状态上链，隐私数据留在链下，只用哈希把两者连起来。
 
 -----------------------------------------------------------
 SLIDE 3 — Changes after feedback [0:40]  (cum 1:40)   Purui
 -----------------------------------------------------------
-Four changes since Task 2. First, the platform. Task 2 chose Fabric. We kept the same idea — only known, approved parties can write — but we now enforce it with roles inside the contract, on public Ethereum. So anyone can check our system on Etherscan, and we have real contract addresses. Second, we hardened the oracle: one authorised account, and the contract checks every reading. Third, non-repudiation is now real: every write is a signed transaction, so we always know who did what. Fourth, clear scope: the three MUSTs and the SHOULD are fully on-chain; the IoT part is simulated. In production we would move to a consortium chain — the contracts would not change.
+Four changes since Task 2. First, the platform. Task 2 chose Fabric. We kept the same idea, that only known and approved parties can write, but we now enforce it with roles inside the contract, on public Ethereum. So anyone can check our system on Etherscan, and we have real contract addresses. Second, we hardened the oracle: one authorised account, and the contract checks every reading. Third, non-repudiation is now real. Every write is a signed transaction, so we always know who did what. Fourth, clear scope: the three MUSTs and the SHOULD are fully on-chain, and the IoT part is simulated. In production we would move to a consortium chain, and the contracts would not change.
 【中文】相比 Task 2 有四处改动。第一，平台。Task 2 选了 Fabric。我们保留了同一个理念——只有已知的、获批的参与方才能写入——但现在改用合约内部的角色来强制实现，跑在公有以太坊上。所以任何人都能在 Etherscan 上核查我们的系统，我们也有了真实的合约地址。第二，我们加固了预言机：只有一个授权账户，且合约会校验每一条读数。第三，不可抵赖现在是实打实的：每次写入都是一笔签名交易，所以我们始终知道谁做了什么。第四，范围清晰：三个 MUST 和那个 SHOULD 完全上链；物联网部分是模拟的。生产环境我们会换成联盟链——合约本身不用改。
 
 -----------------------------------------------------------
 SLIDE 4 — Requirements          [0:20]  (cum 2:00)   Purui
 -----------------------------------------------------------
-This table maps each requirement to a contract function — you will see all of them in the demo. The first four are fully on-chain. The cold-chain one uses simulated sensors. The NFRs at the bottom each map to a real mechanism, not a promise. Fei will now cover the implementation.
+This table maps each requirement to a contract function, and you will see all of them in the demo. The first four are fully on-chain. The cold-chain one uses simulated sensors. The NFRs at the bottom each map to a real mechanism, not a promise. Fei will now cover the implementation.
 【中文】这个表把每条需求对应到一个合约函数——待会演示里都会看到。前四个完全上链，冷链那个用的是模拟传感器。下面的非功能需求每一条都对应一个真实机制，不是空口承诺。下面由 Fei 讲实现。
 
 -----------------------------------------------------------
 SLIDE 5 — Implementation        [0:30]  (cum 2:30)   Fei
 -----------------------------------------------------------
-Quick facts. Solidity, Hardhat, OpenZeppelin; the oracle is Node.js. Both contracts are on Sepolia — addresses are in addresses.txt. We used six patterns from this course: oracle, access control, state machine, emergency stop, hash anchoring, checks-effects-interactions. Thirty-one unit tests, all passing, covering both good and bad paths. The repo is clean and easy to reproduce.
+Quick facts. Solidity, Hardhat, OpenZeppelin; the oracle is Node.js. Both contracts are on Sepolia, and the addresses are in addresses.txt. We used six patterns from this course: oracle, access control, state machine, emergency stop, hash anchoring, and checks-effects-interactions. Thirty-one unit tests, all passing, covering both good and bad paths. The repo is clean and easy to reproduce.
 【中文】几个要点。技术栈是 Solidity、Hardhat、OpenZeppelin；预言机用 Node.js。两个合约都在 Sepolia 上——地址在 addresses.txt 里。我们用了本课程的六个模式：预言机、访问控制、状态机、紧急停止、哈希锚定、检查-生效-交互。三十一个单元测试全部通过，覆盖了正常路径和异常路径。代码库很干净，容易复现。
 
 -----------------------------------------------------------
 SLIDE 6 — Demo plan             [0:15]  (cum 2:45)   Fei
 (last line hands over: "Qiyan will now run the demo.")
 -----------------------------------------------------------
-The demo is one batch, full life cycle, five steps, running live on the Sepolia public testnet — every transaction is real and appears on Etherscan as it happens. Two steps fail on purpose, because the contract enforces the rules, not our app. Blocks take about fifteen seconds, so please bear with the short waits.
+The demo is one batch, full life cycle, five steps, running live on the Sepolia public testnet. Every transaction is real and appears on Etherscan as it happens. Two steps fail on purpose, because the contract enforces the rules, not our app. Blocks take about fifteen seconds, so please bear with the short waits.
 【中文】演示是一个批次走完整个生命周期，五个步骤，实时跑在 Sepolia 公共测试网上——每一笔交易都是真实的，会即时出现在 Etherscan 上。有两步是故意失败的，因为规则是由合约强制的，不是我们的程序。出块大约要十五秒，所以请稍等这几段短暂的等待。（最后一句交接："下面由 Qiyan 来演示。"）
 
 -----------------------------------------------------------
@@ -50,32 +50,32 @@ DEMO                            [4:15]  (cum 7:00)   Qiyan
 
 STEP 1 · Already live on Sepolia  [0:30]  (cum 3:15)
   [Show Etherscan: sepolia.etherscan.io/address/0x94DA9460706f182F01e82E66d7f3238151B5E796]
-Our two contracts are already deployed on Sepolia — here they are on Etherscan, and the addresses are in addresses.txt. At deploy time we granted the roles: manufacturer, distributor, pharmacy. This is our permission system. One detail: the MONITOR role went to the monitor CONTRACT, not a person — only code can quarantine a batch.
+Our two contracts are already deployed on Sepolia. Here they are on Etherscan, and the addresses are in addresses.txt. At deploy time we granted the roles: manufacturer, distributor, pharmacy. This is our permission system. One detail: the MONITOR role went to the monitor CONTRACT, not a person. Only code can quarantine a batch.
 【中文】我们的两个合约已经部署在 Sepolia 上——这就是 Etherscan 上的它们，地址在 addresses.txt 里。部署时我们授予了角色：厂商、分销商、药房。这就是我们的权限系统。有个细节：MONITOR 角色是给了监控合约本身，不是给某个人——所以只有代码能隔离批次。
 
 STEP 2 · Register  [0:55]  (cum 4:10)
   > $env:BATCH_ID = "PHX-LIVE-01"          (use a batch id never used before)
   > npx hardhat run scripts/01-register.js --network sepolia
-Three things, in order. One: the metadata went to an off-chain file — there is the path. Two: we hashed it, and only the hash goes on-chain — that is the privacy design. Three: the manufacturer signed registerBatch — there is the transaction, and the event shows the same hash. Now the first planned failure: the distributor tries to register… rejected. Only manufacturers can register, and the contract enforces it.
-【中文】按顺序三件事。第一：元数据写到了一个链下文件——路径在这里。第二：我们对它算了哈希，只有哈希上链——这就是隐私设计。第三：厂商签名调用了 registerBatch——这是交易，事件里显示的是同一个哈希。现在是第一个预设的失败：分销商试图登记……被拒。只有厂商能登记，这是合约强制的。（命令行第一行：设一个从没用过的批次 ID）
+Three things, in order. One: the metadata went to an off-chain file. There is the path. Two: we hashed it, and only the hash goes on-chain. That is the privacy design. Three: the manufacturer signed registerBatch. There is the transaction, and the event shows the same hash. Now the first planned failure. The distributor tries to register, and the contract rejects it. Only manufacturers can register, and the contract enforces it.
+【中文】按顺序三件事。第一：元数据写到了一个链下文件——路径在这里。第二：我们对它算了哈希，只有哈希上链——这就是隐私设计。第三：厂商签名调用了 registerBatch——这是交易，事件里显示的是同一个哈希。现在是第一个预设的失败：分销商试图登记，合约把它拒绝了。只有厂商能登记，这是合约强制的。（命令行第一行：设一个从没用过的批次 ID）
 
 STEP 3 · Transfer  [0:45]  (cum 4:55)
   > npx hardhat run scripts/02-transfer.js --network sepolia
-Two handovers: manufacturer to distributor… distributor to pharmacy. Each one is a signed transaction with an event. Second planned failure: the distributor tries to move the batch again — rejected, not the holder any more. And at the bottom: the full custody history, read from the chain. Every party sees this same history. That is the trust problem solved.
-【中文】两次交接：厂商到分销商……分销商到药房。每一次都是一笔带事件的签名交易。第二个预设的失败：分销商想再转移这个批次——被拒，它已经不是持有人了。最下面：完整的保管历史，直接从链上读出来的。每一方看到的都是同一份历史。这就把信任问题解决了。
+Two handovers: manufacturer to distributor, then distributor to pharmacy. Each one is a signed transaction with an event. Second planned failure. The distributor tries to move the batch again, and the contract rejects it, because it is not the holder any more. At the bottom is the full custody history, read from the chain. Every party sees this same history. That is the trust problem solved.
+【中文】两次交接：厂商到分销商，然后分销商到药房。每一次都是一笔带事件的签名交易。第二个预设的失败：分销商想再转移这个批次，合约把它拒绝了，因为它已经不是持有人了。最下面是完整的保管历史，直接从链上读出来的。每一方看到的都是同一份历史。这就把信任问题解决了。
 
 STEP 4 · Cold chain  [1:15]  (cum 6:10)
-Our oracle service normally streams readings every cycle — three raw samples, filtered and averaged off-chain, one signed reading on-chain. For the live demo I submit one reading directly, so we don't wait on the cycle; the contract logic is identical. I send a spike — fifteen degrees, like a fridge door left open:
+Our oracle service normally streams readings every cycle: three raw samples, filtered and averaged off-chain, then one signed reading on-chain. For the live demo I submit one reading directly, so we don't wait on the cycle. The contract logic is identical. I send a spike, fifteen degrees, like a fridge door left open:
   > $env:TEMP = "15.3"; npx hardhat run scripts/manual-report.js --network sepolia
-One transaction, three events: excursion detected, quarantine triggered, batch quarantined. The monitor contract called the registry and changed the batch state — no human in that path. All three events are on this one Etherscan transaction.
-(Optional, if you prefer the live oracle: run  npx hardhat run oracle/index.js --network sepolia  in another terminal, then  $env:TEMP = "15.3"; node scripts/inject-excursion.js  — but the 20 s cycle makes it slower on stage.)
+One transaction, three events: excursion detected, quarantine triggered, batch quarantined. The monitor contract called the registry and changed the batch state. No human was involved. All three events are on this one Etherscan transaction.
+(Optional, if you prefer the live oracle: run  npx hardhat run oracle/index.js --network sepolia  in another terminal, then  $env:TEMP = "15.3"; node scripts/inject-excursion.js  . The 20 s cycle makes it slower on stage.)
 【中文】我们的预言机服务平时每个周期上报一次——三个原始样本，在链下过滤并求平均，一条签名读数上链。为了现场演示，我直接提交一条读数，这样就不用等周期；合约逻辑完全一样。我发一个尖峰——十五度，就像冰箱门被开着：（命令见上）一笔交易，三个事件：检测到越界、触发隔离、批次被隔离。监控合约调用了登记合约、改了批次状态——整个过程没有人参与。这三个事件都在这同一笔 Etherscan 交易里。（可选：如果你想用实时预言机，就在另一个终端跑 oracle 服务，再注入尖峰——但 20 秒的周期在台上会更慢。）
 
 STEP 5 · Verify & recall  [0:50]  (cum 7:00)
   > npx hardhat run scripts/03-verify.js --network sepolia
-This is the pharmacy scan — a free read, no transaction. Status: QUARANTINED — do not dispense. Also note: we re-hash the off-chain file, and it matches the on-chain hash, so nothing was tampered. Now the regulator recalls it:
+This is the pharmacy scan, a free read with no transaction. Status: QUARANTINED. Do not dispense. Also note: we re-hash the off-chain file, and it matches the on-chain hash, so nothing was tampered with. Now the regulator recalls it:
   > npx hardhat run scripts/04-recall.js --network sepolia
-Recalled on-chain — and the notifier finds every past holder from the events and notifies them. One transaction, instead of days. Everything you've just seen is on Etherscan right now — real, public, permanent. Zhenyu will now walk through the code.
+Recalled on-chain, and the notifier finds every past holder from the events and notifies them. One transaction, instead of days. Everything you've just seen is on Etherscan right now. It is real, public, and permanent. Zhenyu will now walk through the code.
 【中文】这是药房的扫码核验——一次免费的读取，没有交易。状态：已隔离——不可发药。还要注意：我们把链下文件重新算了哈希，它和链上哈希一致，所以没有被篡改。现在监管方发起召回：（命令见上）链上已召回——通知程序从事件里找出每一个曾经的持有人并通知他们。一笔交易，而不是好几天。你刚才看到的一切现在都在 Etherscan 上——真实、公开、永久。下面由 Zhenyu 讲代码。
 
 -----------------------------------------------------------
@@ -83,36 +83,36 @@ CODE WALKTHROUGH                [3:00]  (cum 10:00)
 -----------------------------------------------------------
 
 STOP 1 · transferCustody  [0:45]  (cum 7:45)   Zhenyu
-This function shows the state machine. Read it top to bottom: batch must be Active; sender must be the current holder; no self-transfer; receiver must have a role; expired batches cannot move. Then update, record history, emit the event. Every rule is a custom error, and every error has a test.
+This function shows the state machine. Read it top to bottom: the batch must be Active; the sender must be the current holder; you cannot transfer to yourself; the receiver must have a role; and expired batches cannot move. Then it updates the holder, records the history, and emits the event. Every rule is a custom error, and every error has a test.
 【中文】这个函数体现了状态机。从上往下读：批次必须是 Active 状态；发送者必须是当前持有人；不能转给自己；接收者必须有角色；过期批次不能转移。然后再更新、记录历史、发出事件。每一条规则都是一个自定义错误，每个错误都有对应的测试。
 
 STOP 2 · reportReading  [0:50]  (cum 8:35)   Zhenyu
-The oracle's gate. First, input checks: temperature must be realistic; timestamps must increase — no replays; no readings from the future. Then the logic: get this batch's range — default two to eight, can be changed per batch — count the excursion, and at the limit, the cross-contract call you saw in the demo. Note the order: state changes first, external call last — checks, effects, interactions.
+The oracle's gate. First, input checks: the temperature must be realistic; timestamps must increase, so no replays; and no readings from the future. Then the logic: get this batch's range (default two to eight, and it can be changed per batch), count the excursion, and at the limit, make the cross-contract call you saw in the demo. Note the order: state changes first, external call last. That is checks, effects, interactions.
 【中文】这是预言机的入口关卡。首先是输入检查：温度必须合理；时间戳必须递增——不能重放；不能有来自未来的读数。然后是逻辑：取出这个批次的温度区间——默认 2 到 8，可以按批次修改——累计越界次数，达到上限时，就是你在演示里看到的那次跨合约调用。注意顺序：先改状态，最后才做外部调用——检查、生效、交互。
 
 STOP 3 · oracle/index.js  [0:45]  (cum 9:20)   Zhenyu
 (here this IS Zhenyu's own code — natural first person: "I wrote this service…")
-The off-chain side. It finds batches by reading events — no config. Each cycle: sample, log raw data off-chain, drop bad samples, average, submit as the one authorised oracle account. When a batch is no longer Active, it stops. The chain never stores raw data — one clean reading per cycle.
+The off-chain side. It finds batches by reading events, with no config. Each cycle it samples the sensors, logs the raw data off-chain, drops bad samples, averages the rest, and submits as the one authorised oracle account. When a batch is no longer Active, it stops. The chain never stores raw data. It gets one clean reading per cycle.
 【中文】链下这一侧。它通过读取事件来发现批次——不需要配置。每个周期：采样，把原始数据记到链下，丢掉坏样本，求平均，用那个唯一授权的预言机账户提交。当一个批次不再是 Active 状态时，就停止跟踪。链上从不存原始数据——每个周期只上报一条干净的读数。（这一段是 Zhenyu 自己写的代码，可以自然地用第一人称："这个服务是我写的……"）
 
 STOP 4 · one test  [0:30]  (cum 9:50)   Zhenyu
-One example of our tests. We set a three-strike rule: two bad readings — still Active, we assert that; third one — quarantined, asserted again. We test the business rule, not just the function. Thirty-one tests, all green.
-【中文】举一个测试的例子。我们设了一个"三振"规则：两次坏读数——还是 Active，我们断言这一点；第三次——被隔离，再断言一次。我们测的是业务规则，不只是函数本身。三十一个测试，全绿。
+One example of our tests. We set a three-strike rule. Two bad readings, and the batch is still Active; we assert that. On the third, it is quarantined; we assert that too. Thirty-one tests are all green.
+【中文】举一个测试的例子。我们设了一个"三振"规则：两次坏读数，批次还是 Active，我们断言这一点；到第三次，它被隔离，我们再断言一次。三十一个测试全绿。
 
 WRAP  [0:10]  (cum 10:00)   Zhenyu
-That is MedicalTraceChain: two contracts with real logic, a guarded oracle, a clean on/off-chain split — deployed and tested. Questions welcome.
+That is MedicalTraceChain: two contracts with real logic, a guarded oracle, and a clean on/off-chain split, all deployed and tested. Questions welcome.
 【中文】这就是 MedicalTraceChain：两个有真实逻辑的合约、一个带防护的预言机、一个清晰的链上/链下划分——已部署、已测试。欢迎提问。
 
 -----------------------------------------------------------
 Q&A quick answers (do NOT paste into slides)
 -----------------------------------------------------------
-• Trust the oracle? — Known weak point. One authorised account plus on-chain checks limit the damage. Production: multiple oracles, or sensors that sign their own data.
+• Trust the oracle? Known weak point. One authorised account plus on-chain checks limit the damage. Production: multiple oracles, or sensors that sign their own data.
 【中文】预言机可信吗？——这是已知的薄弱点。一个授权账户加上链上校验能限制损害。生产环境：多个预言机，或者让传感器自己签名数据。
-• Why leave Fabric? — Same permission idea, now via contract roles. Public chain gives free verification and better tooling. Contracts would move to a consortium chain unchanged.
+• Why leave Fabric? Same permission idea, now via contract roles. Public chain gives free verification and better tooling. Contracts would move to a consortium chain unchanged.
 【中文】为什么放弃 Fabric？——权限理念不变，现在用合约角色实现。公有链带来免费的可核查性和更好的工具链。合约可以原封不动地迁到联盟链。
-• GDPR/HIPAA? — No personal data on-chain, only hashes. Delete the off-chain file and the hash points to nothing — that is the right-to-erasure argument.
+• GDPR/HIPAA? No personal data on-chain, only hashes. Delete the off-chain file and the hash points to nothing. That is the right-to-erasure argument.
 【中文】GDPR/HIPAA 合规？——链上没有任何个人数据，只有哈希。删掉链下文件，哈希就指向不了任何东西——这就是"被遗忘权"的论据。
-• Gas? — Register 188k, transfer 113k, report 70k, recall 34k. Whole deployment plus demo: about 0.014 test ETH.
+• Gas? Register 188k, transfer 113k, report 70k, recall 34k. Whole deployment plus demo: about 0.014 test ETH.
 【中文】Gas 成本？——登记 18.8 万，转移 11.3 万，上报 7 万，召回 3.4 万。整个部署加演示：大约 0.014 个测试 ETH。
-• Task 2 scalability targets? — Not met on a testnet, and we say so. Those numbers drive the production platform choice.
+• Task 2 scalability targets? Not met on a testnet, and we say so. Those numbers drive the production platform choice.
 【中文】Task 2 的可扩展性指标？——在测试网上达不到，我们也如实说明。那些数字是用来指导生产环境平台选型的。
